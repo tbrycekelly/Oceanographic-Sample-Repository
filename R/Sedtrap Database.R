@@ -13,11 +13,18 @@ sedtrap.db$BLOOFINZ.IO = list()
 file = '../NGA-Projects/Data/Sediment Trap/NGA Sediment Trap Inventory.xlsx'
 inventory = read.xlsx(file, startRow = 2)
 
-
 sedtrap.db$NGA = update.inventory(inventory, sedtrap.db$NGA)
 backup(sedtrap.db)
 
 summarize(sedtrap.db$NGA)
+tree = collapse.tree(sedtrap.db$NGA)
+
+chl = read.xlsx('../NGA-Projects/Data/Sediment Trap/NGA Sediment Trap Chlorophylls.xlsx', startRow = 2)
+sedtrap.db$NGA = update.inventory(chl, sedtrap.db$NGA)
+
+pom = read.xlsx('../NGA-Projects/Data/Sediment Trap/NGA Sediment Trap POM.xlsx', startRow = 2)
+sedtrap.db$NGA = update.inventory(pom, sedtrap.db$NGA)
+
 
 tmp = retreive(sedtrap.db$NGA, 'preparation$analysis.type', 'bSi')
 summarize(tmp)

@@ -1,7 +1,7 @@
 library(openxlsx)
 
 
-init.db = function(path, name) {
+init.db = function(path, name, overwrite = F) {
   
   db = list(
     db = list(
@@ -11,10 +11,14 @@ init.db = function(path, name) {
     )
   )
   
-  saveRDS(db, db$db$file)
-  
+  if (overwrite & file.exists(db$db$file)) {
+    db = readRDS(db$db$file)
+  } else {
+    saveRDS(db, db$db$file)
+  }
   db
 }
+
 
 backup = function(db) {
   if (!dir.exists(db$db$dir)) {
@@ -67,6 +71,28 @@ init.sample = function() {
     history = list(
     )
   )
+}
+
+
+add.analysis = function(sample,
+                        id,
+                        type,
+                        value,
+                        variance,
+                        flag,
+                        message) {
+  
+  sample$analysis = c(sample$analysis,
+                      list(
+                        id = id,
+                        type = type,
+                        value = vale,
+                        variance = variance,
+                        flag = flag,
+                        message = message
+                      ))
+  
+  sample
 }
 
 
@@ -272,5 +298,40 @@ calc.flux = function(db) {
   
   aggregated.flux = unique(flux)
   
+}
+
+
+collapse.tree = function(db) {
+  
+  tmp = list()
+  
+  for (i in 1:length(db)) {
+    cruise = db[[i]]$collection$cruise
+    deployment = db[[i]]$collection$deployment
+    tube = db[[i]]$collection$tube
+    
+    ## Cruise
+    if (!cruise %in% names(tmp)) {
+      message('Init cruise ', cruise, '.')
+      tmp[[cruise]] = list()
+    }
+    
+    ## Deployment
+    if (!deployment %in% names(tmp[[cruise]])) {
+      message('Init deployment ', deployment, '.')
+      tmp[[cruise]][[deployment]] = list()
+    }
+    
+    ## tube
+    if (!tube %in% names(tmp[[cruise]][[deployment]])) {
+      message('Init tube ', tube, '.')
+      tmp[[cruise]][[deployment]][[tube]] = list(samples = list())
+    }
+    
+    tmp[[cruise]][[deployment]][[tube]]$samples = c(tmp[[cruise]][[deployment]][[tube]]$samples, db[i])
+    
+  }
+  
+  tmp
 }
 
